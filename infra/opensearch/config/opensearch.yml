@@ -1,0 +1,33 @@
+cluster.name: local-cluster
+node.name: opensearch-node-1
+
+# ── Network ────────────────────────────────────────────────────────────────────
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.cors.allow-headers: "X-Requested-With,Content-Type,Content-Length,Authorization"
+
+# ── Discovery ──────────────────────────────────────────────────────────────────
+discovery.type: single-node
+
+# ── Security (disabled for local dev) ──────────────────────────────────────────
+plugins.security.disabled: true
+
+# ── Performance Analyzer ───────────────────────────────────────────────────────
+plugins.performance_analyzer.enabled: true
+plugins.performance_analyzer.rca.enabled: false
+
+# ── Memory ─────────────────────────────────────────────────────────────────────
+indices.memory.index_buffer_size: 20%
+indices.queries.cache.size: 15%
+
+# ── Disk thresholds ────────────────────────────────────────────────────────────
+cluster.routing.allocation.disk.threshold_enabled: true
+cluster.routing.allocation.disk.watermark.low: "85%"
+cluster.routing.allocation.disk.watermark.high: "90%"
+cluster.routing.allocation.disk.watermark.flood_stage: "95%"
+
+# ── Logging ────────────────────────────────────────────────────────────────────
+logger.level: WARN

@@ -1,0 +1,22 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "index.refresh_interval": "5s"
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "id":         { "type": "keyword" },
+      "username":   {
+        "type": "text",
+        "analyzer": "standard",
+        "fields": { "keyword": { "type": "keyword" } }
+      },
+      "email":      { "type": "keyword" },
+      "role":       { "type": "keyword" },
+      "active":     { "type": "boolean" },
+      "created_at": { "type": "date", "format": "strict_date_optional_time||epoch_millis" }
+    }
+  }
+}
