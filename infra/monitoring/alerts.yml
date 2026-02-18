@@ -1,0 +1,83 @@
+groups:
+
+  - name: api-alerts
+    rules:
+      - alert: HighSearchLatencyP95
+        expr: histogram_quantile(0.95, rate(search_latency_seconds_bucket[5m])) > 0.5
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          summary: "p95 search latency > 500ms"
+          runbook: "Check OpenSearch: curl http://localhost:9200/_cluster/health"
+
+      - alert: HighAPIErrorRate
+        expr: rate(search_requests_total{status="error"}[5m]) / rate(search_requests_total[5m]) > 0.05
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "API error rate above 5%"
+
+      - alert: APIDown
+        expr: up{job="api"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "FastAPI is down"
+          runbook: "docker compose logs api"
+
+  - name: kafka-alerts
+    rules:
+      - alert: KafkaConsumerLagHigh
+        expr: kafka_consumergroup_lag > 10000
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Kafka consumer lag > 10k ({{ $value }} messages)"
+          runbook: "docker compose logs indexer"
+
+      - alert: KafkaConsumerLagCritical
+        expr: kafka_consumergroup_lag > 100000
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "Kafka consumer lag CRITICAL ({{ $value }} messages)"
+
+      - alert: KafkaBrokerDown
+        expr: up{job="kafka"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "Kafka broker is down"
+
+  - name: opensearch-alerts
+    rules:
+      - alert: OpenSearchJVMHeapHigh
+        expr: opensearch_jvm_mem_heap_used_percent > 75
+        for: 3m
+        labels: { severity: warning }
+        annotations:
+          summary: "OpenSearch JVM heap > 75% ({{ $value }}%)"
+          runbook: "Increase OS_HEAP in .env"
+
+      - alert: OpenSearchJVMHeapCritical
+        expr: opensearch_jvm_mem_heap_used_percent > 90
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "OpenSearch JVM heap CRITICAL > 90%"
+
+  - name: system-alerts
+    rules:
+      - alert: DiskSpaceHigh
+        expr: (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"}) < 0.20
+        for: 1m
+        labels: { severity: warning }
+        annotations:
+          summary: "Disk usage above 80% on {{ $labels.mountpoint }}"
+
+      - alert: HighMemoryUsage
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.90
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Host memory usage above 90%"
